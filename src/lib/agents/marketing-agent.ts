@@ -31,22 +31,17 @@ Metrics: ${input.highlightMetrics || "99.4% Inspection Accuracy, 15-minute ISO r
 Audience: ${input.targetAudience || "QA Directors, Sourcing Heads, Supply Chain Executives"}`;
 
   const fallbackData = {
-    title: `Transforming Supply Chain Quality: How Multi-Agent AI Delivers Zero-Defect Assurance`,
-    caption: `🔍 Uncompromising Quality Standards on the Modern Factory Floor.
-
-How long does your supply chain team wait for field inspection reports?
-In today's fast-moving cross-border logistics, waiting 2 to 3 days for manual inspection reports creates costly shipping bottlenecks.
-
-With our integrated Multi-Agent Inspection OS:
-⚡ Real-time WhatsApp Photo Ingestion & Vision Verification
-⚡ Instant Color, Dimension, & Material Matching against Golden Samples
-⚡ Automated ISO/AQL 2.5 Audit Reports generated in under 15 minutes
-
-Ensure your export batches comply with international buyer standards before the container leaves the loading dock.
-
-Connect with our enterprise team to schedule a live demo! 📦
-
-#QualityAssurance #SupplyChainTech #InspectionAI #ManufacturingExcellence #B2BLogistics #AQL25`,
+    title: input.topic.length > 50 ? input.topic.substring(0, 50) + "..." : input.topic,
+    caption: `🔍 ${input.topic}
+\nAttention ${input.targetAudience || "Quality Assurance Heads & Supply Chain Executives"}:
+\nIn today's fast-moving manufacturing ecosystem, manual quality bottlenecks create costly shipment delays and compliance risks.
+\nWith our integrated Multi-Agent Quality Inspection OS:
+⚡ Real-time WhatsApp photo ingestion & computer vision defect verification
+⚡ Automated Delta-E color consistency & AQL 2.5 sample checking
+⚡ Instant ISO 2859-1 audit reports delivered in under 15 minutes
+\nEnsure your export batches comply with international buyer standards before the container leaves the factory floor.
+\nConnect with our team to schedule an on-site pilot demo! 📦
+\n#QualityAssurance #SupplyChainMalaysia #InspectionAI #ManufacturingExcellence #AQL25 #B2BLogistics`,
     mediaType: "IMAGE" as const,
     mediaPrompt: "Modern high-tech manufacturing plant with quality inspector holding tablet and AI holographic quality scan overlays, cinematic lighting, 8k",
     suggestedMediaUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop&q=80",

@@ -34,8 +34,9 @@ export async function callAgentLLM<T = any>({
     });
 
     const result = await model.generateContent(userPrompt);
-    const text = result.response.text();
-    const parsed = JSON.parse(text);
+    const rawText = result.response.text();
+    const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(cleanedText);
 
     return {
       data: parsed as T,

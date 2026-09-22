@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Repeat2,
   Send,
+  Copy,
 } from "lucide-react";
 
 export function MarketingClientView({ initialPosts }: { initialPosts: any[] }) {
@@ -25,6 +26,12 @@ export function MarketingClientView({ initialPosts }: { initialPosts: any[] }) {
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,15 +47,25 @@ export function MarketingClientView({ initialPosts }: { initialPosts: any[] }) {
         }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.result) {
         setPosts([data.result, ...posts]);
         setSelectedPost(data.result);
+        showToast("✨ New LinkedIn Post Draft Generated Successfully!");
+      } else {
+        showToast("⚠️ " + (data.error || "Failed to generate draft"));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      showToast("❌ Network error: " + err.message);
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleCopyCaption = () => {
+    if (!selectedPost?.caption) return;
+    navigator.clipboard.writeText(selectedPost.caption);
+    showToast("📋 Caption copied to clipboard! Ready to paste into LinkedIn.");
   };
 
   const handleApprove = async () => {
@@ -169,6 +186,12 @@ export function MarketingClientView({ initialPosts }: { initialPosts: any[] }) {
 
       {/* Right 7 Cols: LinkedIn Realistic Mockup Preview & Approval */}
       <div className="lg:col-span-7 space-y-4">
+        {toastMessage && (
+          <div className="p-3 rounded-xl bg-blue-600 text-white text-xs font-semibold shadow-lg animate-in fade-in slide-in-from-top-2 flex items-center justify-between">
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
         {selectedPost ? (
           <div className="space-y-4">
             {/* Action Bar */}
@@ -176,21 +199,32 @@ export function MarketingClientView({ initialPosts }: { initialPosts: any[] }) {
               <div className="text-xs text-slate-500">
                 Publication Status: <strong className="text-slate-800 dark:text-slate-200">{selectedPost.status}</strong>
               </div>
-              {selectedPost.status === "DRAFT" ? (
+              <div className="flex flex-wrap items-center gap-2">
                 <button
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition-all self-start sm:self-auto"
+                  type="button"
+                  onClick={handleCopyCaption}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                  title="Copy caption to clipboard"
                 >
-                  {isApproving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  <span>Approve &amp; Schedule for LinkedIn</span>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Caption</span>
                 </button>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Approved &amp; Scheduled Live
-                </span>
-              )}
+                {selectedPost.status === "DRAFT" ? (
+                  <button
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition-all"
+                  >
+                    {isApproving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    <span>Approve &amp; Schedule</span>
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Approved Live
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* LinkedIn Realistic Feed Card Mockup */}
