@@ -374,9 +374,10 @@ app.post("/disconnect", authMiddleware, async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+const serverPort = Number(process.env.PORT) || 4000;
+app.listen(serverPort, "0.0.0.0", () => {
   console.log(`====================================================`);
-  console.log(`🚀 InspectAI Baileys WhatsApp Gateway running on port ${PORT}`);
+  console.log(`🚀 InspectAI Baileys WhatsApp Gateway running on 0.0.0.0:${serverPort}`);
   console.log(`📡 Webhook URL: ${WEBHOOK_URL || "(None - Inbound messages will be logged only)"}`);
   console.log(`🔒 API Secret: ${API_SECRET ? "Enabled" : "Disabled (Public API mode)"}`);
   console.log(`====================================================`);
