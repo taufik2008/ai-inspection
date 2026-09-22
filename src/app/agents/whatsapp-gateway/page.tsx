@@ -56,7 +56,7 @@ export default function WhatsAppGatewayPage() {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 4000);
+    const interval = setInterval(fetchStatus, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -431,6 +431,16 @@ export default function WhatsAppGatewayPage() {
                         <li>Tekan &quot;Tautkan Perangkat&quot; dan arahkan kamera ke QR code ini</li>
                       </ol>
                     </div>
+                  </div>
+                ) : isConnecting || session?.state === "CONNECTING" ? (
+                  <div className="py-8 space-y-3">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center mx-auto">
+                      <RefreshCw className="w-8 h-8 animate-spin" />
+                    </div>
+                    <div className="text-sm font-bold text-white">Menghubungkan ke WhatsApp Server...</div>
+                    <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                      Sedang mengambil QR handshake resmi dari server WhatsApp. Tunggu beberapa detik...
+                    </p>
                   </div>
                 ) : (
                   <div className="py-8 space-y-3">

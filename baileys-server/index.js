@@ -275,8 +275,15 @@ app.post("/connect", authMiddleware, async (req, res) => {
 
     if (!sock || sessionState.state === "DISCONNECTED") {
       startWASocket();
-      // Brief delay to allow initial QR generation
-      await delay(1500);
+    }
+
+    // Wait until QR is generated or connected (up to 8 seconds)
+    const startTime = Date.now();
+    while (Date.now() - startTime < 8000) {
+      if (sessionState.qrCodeDataUrl || sessionState.state === "QR_READY" || sessionState.state === "CONNECTED") {
+        break;
+      }
+      await delay(400);
     }
 
     res.json({
