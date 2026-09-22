@@ -104,8 +104,12 @@ export default function WhatsAppGatewayPage() {
     }
   };
 
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+
   // Disconnect session
   const handleDisconnect = async () => {
+    if (isDisconnecting) return;
+    setIsDisconnecting(true);
     try {
       const res = await fetch("/api/whatsapp/baileys/disconnect", { method: "POST" });
       const json = await res.json();
@@ -113,7 +117,10 @@ export default function WhatsAppGatewayPage() {
         setSession(json.data);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Disconnect error:", e);
+    } finally {
+      setIsDisconnecting(false);
+      fetchStatus();
     }
   };
 
@@ -345,10 +352,11 @@ export default function WhatsAppGatewayPage() {
               {isConnected && (
                 <button
                   onClick={handleDisconnect}
-                  className="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300 hover:underline"
+                  disabled={isDisconnecting}
+                  className="flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 hover:underline disabled:opacity-50"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Unlink Device</span>
+                  <LogOut className={`w-3.5 h-3.5 ${isDisconnecting ? "animate-spin" : ""}`} />
+                  <span>{isDisconnecting ? "Unlinking..." : "Unlink Device"}</span>
                 </button>
               )}
             </div>

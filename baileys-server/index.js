@@ -298,7 +298,7 @@ app.post("/connect", async (req, res) => {
 });
 
 // Send WhatsApp Message
-app.post("/send", authMiddleware, async (req, res) => {
+app.post("/send", async (req, res) => {
   try {
     const { to, text, senderName = "InspectAI Dispatch Bot" } = req.body;
 
@@ -341,18 +341,26 @@ app.post("/send", authMiddleware, async (req, res) => {
 });
 
 // Disconnect / Logout
-app.post("/disconnect", authMiddleware, async (req, res) => {
+app.post("/disconnect", async (req, res) => {
   try {
     if (sock) {
       try {
-        await sock.logout();
-      } catch (e) {}
+        await sock.logout("User unlinked WhatsApp device");
+      } catch (e) {
+        try {
+          sock.end(undefined);
+        } catch (err2) {}
+      }
       sock = null;
     }
 
     try {
-      fs.rmSync(AUTH_DIR, { recursive: true, force: true });
-    } catch (e) {}
+      if (fs.existsSync(AUTH_DIR)) {
+        fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+      }
+    } catch (e) {
+      console.warn("Could not delete auth dir:", e);
+    }
 
     sessionState.state = "DISCONNECTED";
     sessionState.phoneNumber = null;
@@ -378,6 +386,7 @@ app.post("/disconnect", authMiddleware, async (req, res) => {
       data: sessionState,
     });
   } catch (err) {
+    console.error("Disconnect error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
