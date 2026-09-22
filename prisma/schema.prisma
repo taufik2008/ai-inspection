@@ -1,0 +1,219 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  MANAGER
+  ADMIN
+  INSPECTOR
+}
+
+enum InspectorStatus {
+  AVAILABLE
+  ON_DUTY
+  OFF_DUTY
+}
+
+enum QuotationStatus {
+  DRAFT
+  MANAGER_APPROVED
+  SENT_TO_CLIENT
+  REJECTED
+}
+
+enum JobStatus {
+  SCHEDULED
+  IN_PROGRESS
+  IMAGES_RECEIVED
+  VALIDATING
+  REPORT_READY
+  COMPLETED
+  CANCELLED
+}
+
+enum FileCategory {
+  RAW_WA_IMAGES
+  RAW_WA_DOCUMENTS
+  WEIGHT_DIMENSION
+  REQUIREMENTS_SAMPLE
+  FINAL_REPORT
+}
+
+enum AIValidationStatus {
+  PENDING
+  PERFECT
+  DEFECT_FOUND
+}
+
+enum ReportVerdict {
+  APPROVED
+  REJECTED
+  CONDITIONAL_PASS
+}
+
+enum ReportStatus {
+  DRAFT
+  MANAGER_APPROVED
+  SENT_TO_CLIENT
+}
+
+enum MarketingStatus {
+  DRAFT
+  APPROVED
+  PUBLISHED
+}
+
+model User {
+  id               String            @id @default(cuid())
+  name             String
+  email            String            @unique
+  role             Role              @default(INSPECTOR)
+  phone            String?
+  avatar           String?
+  status           InspectorStatus   @default(AVAILABLE)
+  skills           String[]          @default([])
+  inspectionJobs   InspectionJob[]
+  trainingProgress TrainingProgress[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Client {
+  id             String          @id @default(cuid())
+  name           String
+  company        String
+  email          String          @unique
+  phone          String
+  address        String?
+  quotations     Quotation[]
+  inspectionJobs InspectionJob[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Quotation {
+  id                 String          @id @default(cuid())
+  quotationNumber    String          @unique
+  clientId           String
+  client             Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items              Json            // [{ itemName, quantity, unitPrice, description }]
+  subtotal           Float
+  tax                Float           @default(0)
+  totalAmount        Float
+  status             QuotationStatus @default(DRAFT)
+  validUntil         DateTime
+  notes              String?
+  aiDraftReasoning   String?
+  managerNotes       String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+}
+
+model InspectionJob {
+  id                 String               @id @default(cuid())
+  jobCode            String               @unique
+  title              String
+  clientId           String
+  client             Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  inspectorId        String?
+  inspector          User?                @relation(fields: [inspectorId], references: [id])
+  scheduledDate      DateTime
+  location           String
+  status             JobStatus            @default(SCHEDULED)
+  requirements       Json                 // { colorSpecs, sizeSpecs, materialSpecs, minPhotoCount, checklist: [] }
+  goldenSampleNotes  String?
+  goldenSampleImages String[]             @default([])
+  artifacts          InspectionArtifact[]
+  reports            InspectionReport[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model InspectionArtifact {
+  id                 String             @id @default(cuid())
+  jobId              String
+  job                InspectionJob      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  fileName           String
+  fileType           String             // image/jpeg, application/vnd.openxmlformats, text/plain, etc.
+  fileUrl            String
+  fileSize           Int                @default(0)
+  folderCategory     FileCategory       @default(RAW_WA_IMAGES)
+  dimensions         String?            // e.g. "120 x 80 x 45 cm"
+  weightKg           Float?             // e.g. 14.5
+  colorCode          String?            // e.g. "PANTONE 19-4052 Classic Blue"
+  material           String?            // e.g. "SUS 304 Stainless Steel"
+  aiValidationStatus AIValidationStatus @default(PENDING)
+  aiDefectNotes      String?
+  aiConfidenceScore  Float?
+  createdAt          DateTime           @default(now())
+}
+
+model InspectionReport {
+  id                 String             @id @default(cuid())
+  jobId              String
+  job                InspectionJob      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reportNumber       String             @unique
+  summary            String
+  totalItemsChecked  Int                @default(0)
+  passedCount        Int                @default(0)
+  defectCount        Int                @default(0)
+  finalVerdict       ReportVerdict      @default(APPROVED)
+  fullContent        Json               // Structured detailed report sections
+  pdfUrl             String?
+  status             ReportStatus       @default(DRAFT)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model TrainingModule {
+  id                 String             @id @default(cuid())
+  title              String
+  description        String
+  videoUrl           String
+  durationSeconds    Int                @default(300)
+  category           String
+  requirementsData   Json?              // sample reports, client specs
+  quizQuestions      Json               // [{ question, options: [], correctIndex }]
+  passingScore       Int                @default(80)
+  trainingProgress   TrainingProgress[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model TrainingProgress {
+  id                 String             @id @default(cuid())
+  inspectorId        String
+  inspector          User               @relation(fields: [inspectorId], references: [id], onDelete: Cascade)
+  moduleId           String
+  module             TrainingModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  watchTimeSeconds   Int                @default(0)
+  isCompleted        Boolean            @default(false)
+  quizScore          Int?
+  certificateNumber  String?
+  certificateUrl     String?
+  completedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@unique([inspectorId, moduleId])
+}
+
+model MarketingPost {
+  id                 String             @id @default(cuid())
+  platform           String             @default("LINKEDIN")
+  title              String
+  caption            String
+  mediaType          String             @default("IMAGE") // IMAGE, VIDEO, CAROUSEL
+  mediaUrl           String?
+  status             MarketingStatus    @default(DRAFT)
+  targetAudience     String?
+  scheduledFor       DateTime?
+  publishedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}

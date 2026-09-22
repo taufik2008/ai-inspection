@@ -1,0 +1,39 @@
+{
+  "name": "InspectAI - Multi-Agent Field Inspection OS",
+  "short_name": "InspectAI",
+  "description": "Autonomous Multi-Agent Quality Inspection, WhatsApp Baileys Gateway & Anti-Skip Academy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quality Audit",
+      "url": "/agents/quality",
+      "description": "Side-by-side AI Vision Photo Audit"
+    },
+    {
+      "name": "WhatsApp Gateway",
+      "url": "/agents/whatsapp-gateway",
+      "description": "WhatsApp Baileys Device Hub & QR Pairing"
+    },
+    {
+      "name": "Field Jobs",
+      "url": "/management/jobs",
+      "description": "Offline-ready Inspection Orders"
+    }
+  ]
+}
