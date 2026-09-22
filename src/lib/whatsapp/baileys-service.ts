@@ -75,8 +75,13 @@ class BaileysManager {
   }
 
   private getLiveServerUrl(): string | null {
-    const url = process.env.BAILEYS_SERVER_URL || process.env.NEXT_PUBLIC_BAILEYS_SERVER_URL;
-    return url ? url.replace(/\/$/, "") : null;
+    let url = process.env.BAILEYS_SERVER_URL || process.env.NEXT_PUBLIC_BAILEYS_SERVER_URL;
+    if (!url) return null;
+    url = url.trim().replace(/\/$/, "");
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = `https://${url}`;
+    }
+    return url;
   }
 
   private getHeaders(): HeadersInit {
@@ -98,6 +103,7 @@ class BaileysManager {
         const res = await fetch(`${liveUrl}/status`, {
           headers: this.getHeaders(),
           cache: "no-store",
+          signal: AbortSignal.timeout(8000),
         });
         if (res.ok) {
           const json = await res.json();
@@ -107,9 +113,11 @@ class BaileysManager {
               isLiveServer: true,
             };
           }
+        } else {
+          console.warn(`[BaileysService] Status check returned HTTP ${res.status} from ${liveUrl}`);
         }
-      } catch (e) {
-        console.warn("[BaileysService] Live Baileys microservice unreachable, falling back to local state:", e);
+      } catch (e: any) {
+        console.warn(`[BaileysService] Live Baileys microservice (${liveUrl}) unreachable:`, e.message || e);
       }
     }
     return { ...this.session, isLiveServer: false };
@@ -124,6 +132,7 @@ class BaileysManager {
           method: "POST",
           headers: this.getHeaders(),
           cache: "no-store",
+          signal: AbortSignal.timeout(12000),
         });
         if (res.ok) {
           const json = await res.json();
@@ -134,8 +143,8 @@ class BaileysManager {
             };
           }
         }
-      } catch (e) {
-        console.warn("[BaileysService] Failed to init live Baileys session:", e);
+      } catch (e: any) {
+        console.warn(`[BaileysService] Failed to init live Baileys session (${liveUrl}):`, e.message || e);
       }
     }
 
