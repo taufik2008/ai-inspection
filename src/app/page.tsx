@@ -20,43 +20,61 @@ import { formatRupiah, formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function ControlTowerPage() {
-  const [
-    totalJobs,
-    pendingQuotations,
-    draftReports,
-    draftMarketing,
-    activeInspectors,
-    recentJobs,
-  ] = await Promise.all([
-    prisma.inspectionJob.count(),
-    prisma.quotation.findMany({
-      where: { status: "DRAFT" },
-      include: { client: true },
-      take: 3,
-    }),
-    prisma.inspectionReport.findMany({
-      where: { status: "DRAFT" },
-      include: { job: { include: { client: true } } },
-      take: 3,
-    }),
-    prisma.marketingPost.findMany({
-      where: { status: "DRAFT" },
-      take: 2,
-    }),
-    prisma.user.findMany({
-      where: { role: "INSPECTOR" },
-    }),
-    prisma.inspectionJob.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        client: true,
-        inspector: true,
-        artifacts: true,
-        reports: true,
-      },
-    }),
-  ]);
+  let totalJobs = 0;
+  let pendingQuotations: any[] = [];
+  let draftReports: any[] = [];
+  let draftMarketing: any[] = [];
+  let activeInspectors: any[] = [];
+  let recentJobs: any[] = [];
+
+  try {
+    const [
+      tj,
+      pq,
+      dr,
+      dm,
+      ai,
+      rj,
+    ] = await Promise.all([
+      prisma.inspectionJob.count(),
+      prisma.quotation.findMany({
+        where: { status: "DRAFT" },
+        include: { client: true },
+        take: 3,
+      }),
+      prisma.inspectionReport.findMany({
+        where: { status: "DRAFT" },
+        include: { job: { include: { client: true } } },
+        take: 3,
+      }),
+      prisma.marketingPost.findMany({
+        where: { status: "DRAFT" },
+        take: 2,
+      }),
+      prisma.user.findMany({
+        where: { role: "INSPECTOR" },
+      }),
+      prisma.inspectionJob.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          client: true,
+          inspector: true,
+          artifacts: true,
+          reports: true,
+        },
+      }),
+    ]);
+
+    totalJobs = tj;
+    pendingQuotations = pq;
+    draftReports = dr;
+    draftMarketing = dm;
+    activeInspectors = ai;
+    recentJobs = rj;
+  } catch (error) {
+    console.error("Database query fallback on homepage:", error);
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
