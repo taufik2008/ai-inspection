@@ -33,6 +33,7 @@ export default function WhatsAppGatewayPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showDeployGuide, setShowDeployGuide] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   // Form states
   const [targetNumber, setTargetNumber] = useState("+6281234567890");
@@ -104,8 +105,6 @@ export default function WhatsAppGatewayPage() {
     }
   };
 
-  const [isDisconnecting, setIsDisconnecting] = useState(false);
-
   // Disconnect session
   const handleDisconnect = async () => {
     if (isDisconnecting) return;
@@ -163,7 +162,7 @@ export default function WhatsAppGatewayPage() {
           action: "inbound_field_upload",
           from: "+62 812-3456-7890",
           senderName: "Arief Hidayat (Inspector)",
-          text: "Berikut foto audit jahitan kerah dan kancing kemeja batch 1. SELESAI KIRIM.",
+          text: "Attached are inspection audit photos for collar stitching and shirt buttons batch 1. UPLOAD COMPLETED.",
           mediaUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&auto=format&fit=crop&q=80",
           mediaType: "image",
         }),
@@ -213,7 +212,7 @@ export default function WhatsAppGatewayPage() {
             WhatsApp Gateway &amp; Pairing Hub
           </h1>
           <p className="text-xs sm:text-sm text-slate-300">
-            Hubungkan nomor WhatsApp resmi via QR Code Baileys. Otomatisasi pengiriman notifikasi H-1 Dispatch dan penerimaan foto audit lapangan.
+            Connect your official WhatsApp business or field phone number via Baileys QR Code. Automate H-1 Dispatch notifications and ingest real-time field audit photos.
           </p>
         </div>
 
@@ -273,17 +272,17 @@ export default function WhatsAppGatewayPage() {
             </div>
             <div>
               <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                <span>Panduan Koneksi WhatsApp Real (Baileys 24/7) vs Demo Mode</span>
+                <span>Real WhatsApp Connection Guide (Baileys 24/7) vs Demo Mode</span>
                 {isLiveServer && (
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    Aktif
+                    Active
                   </span>
                 )}
               </div>
               <p className="text-[11px] text-slate-400">
                 {isLiveServer
-                  ? "Baileys Microservice terhubung. Anda dapat scan QR langsung dengan WhatsApp di HP."
-                  : "Vercel berjalan serverless. Untuk scan WhatsApp asli di HP, jalankan Baileys Server di Railway/Render/VPS atau klik '1-Click Pair Demo'."}
+                  ? "Baileys Microservice is connected. You can scan the QR code directly with your mobile WhatsApp."
+                  : "Vercel runs on a serverless architecture. To scan with real WhatsApp, deploy the Baileys Server to Railway/Render/VPS or click '1-Click Pair Demo'."}
               </p>
             </div>
           </div>
@@ -299,16 +298,16 @@ export default function WhatsAppGatewayPage() {
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
                 <div className="font-bold text-blue-400 flex items-center gap-2">
                   <Terminal className="w-4 h-4" />
-                  <span>1. Jalankan Baileys Server di Komputer Lokal</span>
+                  <span>1. Run Baileys Server Locally</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Folder <code className="text-amber-300">baileys-server/</code> sudah siap di dalam repo ini:
+                  The <code className="text-amber-300">baileys-server/</code> directory is preconfigured in this repository:
                 </p>
                 <pre className="p-2.5 bg-slate-950 rounded-lg text-[11px] text-emerald-400 overflow-x-auto border border-slate-800">
                   cd baileys-server{"\n"}npm install{"\n"}npm start
                 </pre>
                 <p className="text-[11px] text-slate-400">
-                  Tambahkan <code className="text-blue-300">BAILEYS_SERVER_URL=http://localhost:4000</code> di file <code className="text-blue-300">.env</code> Next.js.
+                  Add <code className="text-blue-300">BAILEYS_SERVER_URL=http://localhost:4000</code> to your Next.js <code className="text-blue-300">.env</code> file.
                 </p>
               </div>
 
@@ -316,22 +315,22 @@ export default function WhatsAppGatewayPage() {
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
                 <div className="font-bold text-emerald-400 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
-                  <span>2. Deploy ke Railway / Render (Online 24/7)</span>
+                  <span>2. Deploy to Railway / Render (24/7 Online)</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Deploy folder <code className="text-amber-300">baileys-server/</code> ke Railway/Render dengan konfigurasi yang sudah disediakan:
+                  Deploy the <code className="text-amber-300">baileys-server/</code> folder to Railway/Render using the provided configurations:
                 </p>
                 <ul className="list-disc list-inside text-[11px] text-slate-400 space-y-1">
-                  <li>File konfigurasi: <code className="text-slate-300">Dockerfile</code>, <code className="text-slate-300">railway.json</code>, <code className="text-slate-300">render.yaml</code></li>
-                  <li>Set Env: <code className="text-slate-300">WEBHOOK_URL=https://aqs-inspection.vercel.app/api/webhooks/whatsapp</code></li>
-                  <li>Set Env di Vercel: <code className="text-slate-300">BAILEYS_SERVER_URL=https://your-railway-url.app</code></li>
+                  <li>Configuration files: <code className="text-slate-300">Dockerfile</code>, <code className="text-slate-300">railway.json</code>, <code className="text-slate-300">render.yaml</code></li>
+                  <li>Set Environment Variable: <code className="text-slate-300">WEBHOOK_URL=https://aqs-inspection.vercel.app/api/webhooks/whatsapp</code></li>
+                  <li>Set Environment Variable in Vercel: <code className="text-slate-300">BAILEYS_SERVER_URL=https://your-railway-url.app</code></li>
                 </ul>
               </div>
             </div>
 
             <div className="p-3 bg-blue-950/40 rounded-xl border border-blue-900/50 flex items-center justify-between">
               <span className="text-[11px] text-blue-300">
-                💡 Ingin mencoba alur kerja AI Multi-Agent sekarang tanpa setup server? Klik tombol <strong>⚡ 1-Click Pair Demo</strong> di bawah.
+                💡 Want to test the AI Multi-Agent workflow right now without server setup? Click the <strong>⚡ 1-Click Pair Demo</strong> button below.
               </span>
             </div>
           </div>
@@ -434,9 +433,9 @@ export default function WhatsAppGatewayPage() {
                     <div className="text-xs text-slate-300 space-y-1">
                       <div className="font-bold text-white">Scan this QR code with WhatsApp:</div>
                       <ol className="text-[11px] text-slate-400 list-decimal list-inside text-left px-4 space-y-0.5">
-                        <li>Buka WhatsApp di smartphone Anda</li>
-                        <li>Tekan Menu (⋮) atau Pengaturan &gt; Perangkat Tertaut</li>
-                        <li>Tekan &quot;Tautkan Perangkat&quot; dan arahkan kamera ke QR code ini</li>
+                        <li>Open WhatsApp on your mobile phone</li>
+                        <li>Tap Menu (⋮) or Settings &gt; Linked Devices</li>
+                        <li>Tap &quot;Link a Device&quot; and point your camera to this screen</li>
                       </ol>
                     </div>
                   </div>
@@ -445,9 +444,9 @@ export default function WhatsAppGatewayPage() {
                     <div className="w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center mx-auto">
                       <RefreshCw className="w-8 h-8 animate-spin" />
                     </div>
-                    <div className="text-sm font-bold text-white">Menghubungkan ke WhatsApp Server...</div>
+                    <div className="text-sm font-bold text-white">Connecting to WhatsApp Server...</div>
                     <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                      Sedang mengambil QR handshake resmi dari server WhatsApp. Tunggu beberapa detik...
+                      Retrieving official multi-device QR handshake from WhatsApp servers. Please wait a few seconds...
                     </p>
                   </div>
                 ) : (
@@ -457,7 +456,7 @@ export default function WhatsAppGatewayPage() {
                     </div>
                     <div className="text-sm font-bold text-white">No Active WhatsApp Session</div>
                     <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                      Generate QR code untuk menautkan nomor WhatsApp operasional ke InspectAI.
+                      Generate a QR code to link your operational WhatsApp number to InspectAI.
                     </p>
                   </div>
                 )}
