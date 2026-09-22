@@ -4,19 +4,29 @@ import { JobsManagementView } from "./jobs-client";
 export const dynamic = "force-dynamic";
 
 export default async function JobsManagementPage() {
-  const [jobs, clients, inspectors] = await Promise.all([
-    prisma.inspectionJob.findMany({
-      include: {
-        client: true,
-        inspector: true,
-        artifacts: true,
-        reports: true,
-      },
-      orderBy: { scheduledDate: "desc" },
-    }),
-    prisma.client.findMany(),
-    prisma.user.findMany({ where: { role: "INSPECTOR" } }),
-  ]);
+  let jobs: any[] = [];
+  let clients: any[] = [];
+  let inspectors: any[] = [];
+  try {
+    const [jb, cl, insp] = await Promise.all([
+      prisma.inspectionJob.findMany({
+        include: {
+          client: true,
+          inspector: true,
+          artifacts: true,
+          reports: true,
+        },
+        orderBy: { scheduledDate: "desc" },
+      }),
+      prisma.client.findMany(),
+      prisma.user.findMany({ where: { role: "INSPECTOR" } }),
+    ]);
+    jobs = jb;
+    clients = cl;
+    inspectors = insp;
+  } catch (err) {
+    console.error("JobsManagementPage database error:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

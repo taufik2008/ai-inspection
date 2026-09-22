@@ -4,24 +4,32 @@ import { TrainingClientView } from "./training-client";
 export const dynamic = "force-dynamic";
 
 export default async function TrainingAgentPage() {
-  const [modules, inspectors] = await Promise.all([
-    prisma.trainingModule.findMany({
-      include: {
-        trainingProgress: {
-          include: { inspector: true },
+  let modules: any[] = [];
+  let inspectors: any[] = [];
+  try {
+    const [mod, insp] = await Promise.all([
+      prisma.trainingModule.findMany({
+        include: {
+          trainingProgress: {
+            include: { inspector: true },
+          },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.user.findMany({
-      where: { role: "INSPECTOR" },
-      include: {
-        trainingProgress: {
-          include: { module: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.user.findMany({
+        where: { role: "INSPECTOR" },
+        include: {
+          trainingProgress: {
+            include: { module: true },
+          },
         },
-      },
-    }),
-  ]);
+      }),
+    ]);
+    modules = mod;
+    inspectors = insp;
+  } catch (err) {
+    console.error("TrainingAgentPage database error:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

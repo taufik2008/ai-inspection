@@ -10,29 +10,37 @@ export default async function ReportsAgentPage({
 }) {
   const { jobId } = await searchParams;
 
-  const [jobs, reports] = await Promise.all([
-    prisma.inspectionJob.findMany({
-      include: {
-        client: true,
-        inspector: true,
-        artifacts: true,
-        reports: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.inspectionReport.findMany({
-      include: {
-        job: {
-          include: {
-            client: true,
-            inspector: true,
-            artifacts: true,
+  let jobs: any[] = [];
+  let reports: any[] = [];
+  try {
+    const [jb, rep] = await Promise.all([
+      prisma.inspectionJob.findMany({
+        include: {
+          client: true,
+          inspector: true,
+          artifacts: true,
+          reports: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.inspectionReport.findMany({
+        include: {
+          job: {
+            include: {
+              client: true,
+              inspector: true,
+              artifacts: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+    jobs = jb;
+    reports = rep;
+  } catch (err) {
+    console.error("ReportsAgentPage database error:", err);
+  }
 
   const selectedJob =
     jobs.find((j) => j.id === jobId) || jobs[0] || null;

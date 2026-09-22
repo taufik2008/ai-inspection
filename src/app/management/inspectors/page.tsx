@@ -4,22 +4,27 @@ import { InspectorsManagementView } from "./inspectors-client";
 export const dynamic = "force-dynamic";
 
 export default async function InspectorsManagementPage() {
-  const users = await prisma.user.findMany({
-    include: {
-      _count: {
-        select: {
-          inspectionJobs: true,
-          trainingProgress: true,
+  let users: any[] = [];
+  try {
+    users = await prisma.user.findMany({
+      include: {
+        _count: {
+          select: {
+            inspectionJobs: true,
+            trainingProgress: true,
+          },
+        },
+        trainingProgress: {
+          include: {
+            module: true,
+          },
         },
       },
-      trainingProgress: {
-        include: {
-          module: true,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err) {
+    console.error("InspectorsManagementPage database error:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

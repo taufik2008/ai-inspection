@@ -10,15 +10,20 @@ export default async function QualityAgentPage({
 }) {
   const { jobId } = await searchParams;
 
-  const jobs = await prisma.inspectionJob.findMany({
-    include: {
-      client: true,
-      inspector: true,
-      artifacts: true,
-      reports: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  let jobs: any[] = [];
+  try {
+    jobs = await prisma.inspectionJob.findMany({
+      include: {
+        client: true,
+        inspector: true,
+        artifacts: true,
+        reports: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err) {
+    console.error("QualityAgentPage database error:", err);
+  }
 
   const selectedJob =
     jobs.find((j) => j.id === jobId) || jobs[0] || null;

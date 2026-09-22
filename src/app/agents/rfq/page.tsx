@@ -10,13 +10,21 @@ export default async function RFQAgentPage({
 }) {
   const { id } = await searchParams;
 
-  const [clients, quotations] = await Promise.all([
-    prisma.client.findMany(),
-    prisma.quotation.findMany({
-      include: { client: true },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+  let clients: any[] = [];
+  let quotations: any[] = [];
+  try {
+    const [c, q] = await Promise.all([
+      prisma.client.findMany(),
+      prisma.quotation.findMany({
+        include: { client: true },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+    clients = c;
+    quotations = q;
+  } catch (err) {
+    console.error("RFQAgentPage database error:", err);
+  }
 
   const selectedQuotation =
     quotations.find((q) => q.id === id) || quotations[0] || null;

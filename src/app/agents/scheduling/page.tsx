@@ -4,24 +4,34 @@ import { SchedulingClientView } from "./scheduling-client";
 export const dynamic = "force-dynamic";
 
 export default async function SchedulingAgentPage() {
-  const [inspectors, clients, jobs] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: "INSPECTOR" },
-      include: {
-        trainingProgress: {
-          include: { module: true },
+  let inspectors: any[] = [];
+  let clients: any[] = [];
+  let jobs: any[] = [];
+  try {
+    const [insp, cl, jb] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: "INSPECTOR" },
+        include: {
+          trainingProgress: {
+            include: { module: true },
+          },
         },
-      },
-    }),
-    prisma.client.findMany(),
-    prisma.inspectionJob.findMany({
-      include: {
-        client: true,
-        inspector: true,
-      },
-      orderBy: { scheduledDate: "asc" },
-    }),
-  ]);
+      }),
+      prisma.client.findMany(),
+      prisma.inspectionJob.findMany({
+        include: {
+          client: true,
+          inspector: true,
+        },
+        orderBy: { scheduledDate: "asc" },
+      }),
+    ]);
+    inspectors = insp;
+    clients = cl;
+    jobs = jb;
+  } catch (err) {
+    console.error("SchedulingAgentPage database error:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

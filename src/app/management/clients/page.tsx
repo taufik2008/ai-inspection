@@ -4,17 +4,22 @@ import { ClientsManagementView } from "./clients-client";
 export const dynamic = "force-dynamic";
 
 export default async function ClientsManagementPage() {
-  const clients = await prisma.client.findMany({
-    include: {
-      _count: {
-        select: {
-          inspectionJobs: true,
-          quotations: true,
+  let clients: any[] = [];
+  try {
+    clients = await prisma.client.findMany({
+      include: {
+        _count: {
+          select: {
+            inspectionJobs: true,
+            quotations: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err) {
+    console.error("ClientsManagementPage database error:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

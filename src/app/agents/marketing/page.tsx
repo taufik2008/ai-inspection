@@ -4,9 +4,14 @@ import { MarketingClientView } from "./marketing-client";
 export const dynamic = "force-dynamic";
 
 export default async function MarketingAgentPage() {
-  const posts = await prisma.marketingPost.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  let posts: any[] = [];
+  try {
+    posts = await prisma.marketingPost.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err) {
+    console.error("MarketingAgentPage database error:", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
