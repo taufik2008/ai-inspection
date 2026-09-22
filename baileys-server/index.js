@@ -260,16 +260,16 @@ app.get("/health", (req, res) => {
   res.json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
-// Get Session Status & QR Code
-app.get("/status", authMiddleware, (req, res) => {
+// Get Session Status & QR Code (Public for Vercel Next.js)
+app.get("/status", (req, res) => {
   res.json({
     success: true,
     data: sessionState,
   });
 });
 
-// Trigger Connect / Refresh QR
-app.post("/connect", authMiddleware, async (req, res) => {
+// Trigger Connect / Refresh QR (Public for Vercel Next.js)
+app.post("/connect", async (req, res) => {
   try {
     if (sessionState.state === "CONNECTED") {
       return res.json({ success: true, data: sessionState, message: "Already connected" });
