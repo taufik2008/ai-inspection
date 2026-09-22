@@ -59,11 +59,17 @@ function addMessageLog(log) {
   }
 }
 
-// Format phone number to WhatsApp JID (e.g. +6281234 -> 6281234@s.whatsapp.net)
+// Format phone number to WhatsApp JID (supports Malaysia +60, Indonesia +62, and all international codes)
 function formatJID(phone) {
   let clean = phone.replace(/[^0-9]/g, "");
-  if (clean.startsWith("0")) {
-    clean = "62" + clean.substring(1);
+  // If user entered Malaysian local format e.g. 0123456789 or 017...
+  if (clean.startsWith("01")) {
+    clean = "601" + clean.substring(2);
+  } else if (clean.startsWith("08")) {
+    // If user entered Indonesian local format e.g. 08123456789
+    clean = "628" + clean.substring(2);
+  } else if (clean.startsWith("0")) {
+    clean = "60" + clean.substring(1);
   }
   return clean.includes("@s.whatsapp.net") ? clean : `${clean}@s.whatsapp.net`;
 }
