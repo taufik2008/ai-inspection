@@ -18,7 +18,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 const AUTH_DIR = process.env.AUTH_DIR || path.join(__dirname, "auth_info_baileys");
 const WEBHOOK_URL = process.env.WEBHOOK_URL || "";
-const API_SECRET = process.env.API_SECRET || "";
+const API_SECRET = (process.env.API_SECRET || "").trim();
 
 const app = express();
 app.use(cors());
@@ -42,7 +42,9 @@ const sessionState = {
 
 // Auth middleware if API_SECRET is configured
 function authMiddleware(req, res, next) {
-  if (!API_SECRET) return next();
+  if (!API_SECRET || API_SECRET === "undefined" || API_SECRET === "null" || API_SECRET === '""') {
+    return next();
+  }
   const token = req.headers["x-api-secret"] || req.query.secret;
   if (token !== API_SECRET) {
     return res.status(401).json({ success: false, error: "Unauthorized: Invalid API secret" });
