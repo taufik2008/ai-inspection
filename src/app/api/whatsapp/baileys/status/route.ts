@@ -3,7 +3,7 @@ import { baileysService } from "@/lib/whatsapp/baileys-service";
 
 export async function GET() {
   try {
-    const session = baileysService.getSession();
+    const session = await baileysService.getSession();
     return NextResponse.json({
       success: true,
       data: session,

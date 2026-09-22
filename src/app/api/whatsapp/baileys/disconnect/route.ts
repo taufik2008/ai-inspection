@@ -3,7 +3,7 @@ import { baileysService } from "@/lib/whatsapp/baileys-service";
 
 export async function POST() {
   try {
-    const session = baileysService.disconnect();
+    const session = await baileysService.disconnect();
     return NextResponse.json({
       success: true,
       message: "Disconnected from WhatsApp Baileys session",

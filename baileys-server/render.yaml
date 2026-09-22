@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: inspectai-baileys-gateway
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: WEBHOOK_URL
+        value: https://aqs-inspection.vercel.app/api/webhooks/whatsapp

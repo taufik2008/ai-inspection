@@ -1,5 +1,6 @@
 # Dependencies
 /node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -25,6 +26,7 @@ yarn-error.log*
 # Local environment files
 .env
 .env*.local
+baileys-server/.env
 
 # Vercel
 .vercel
@@ -34,5 +36,6 @@ yarn-error.log*
 next-env.d.ts
 
 # Baileys WhatsApp local auth session
-/auth_info_baileys/
 auth_info_baileys/
+baileys-server/auth_info_baileys/
+baileys-server/node_modules/

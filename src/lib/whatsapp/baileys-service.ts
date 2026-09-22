@@ -26,9 +26,9 @@ export interface BaileysDeviceSession {
   batteryLevel: number;
   lastConnectedAt: string | null;
   messages: WhatsAppMessageLog[];
+  isLiveServer?: boolean;
 }
 
-// In-memory singleton state across Next.js API requests
 class BaileysManager {
   private static instance: BaileysManager;
   private session: BaileysDeviceSession = {
@@ -37,9 +37,10 @@ class BaileysManager {
     qrRaw: null,
     phoneNumber: null,
     pushName: null,
-    platform: "WhatsApp Multi-Device Engine",
+    platform: "WhatsApp Multi-Device Engine (Demo Mode)",
     batteryLevel: 96,
     lastConnectedAt: null,
+    isLiveServer: false,
     messages: [
       {
         id: "msg-initial-1",
@@ -73,19 +74,79 @@ class BaileysManager {
     return BaileysManager.instance;
   }
 
-  public getSession(): BaileysDeviceSession {
-    return this.session;
+  private getLiveServerUrl(): string | null {
+    const url = process.env.BAILEYS_SERVER_URL || process.env.NEXT_PUBLIC_BAILEYS_SERVER_URL;
+    return url ? url.replace(/\/$/, "") : null;
+  }
+
+  private getHeaders(): HeadersInit {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    const secret = process.env.BAILEYS_API_SECRET;
+    if (secret) {
+      headers["x-api-secret"] = secret;
+    }
+    return headers;
+  }
+
+  // Get current status (either from live Baileys microservice or fallback in-memory)
+  public async getSession(): Promise<BaileysDeviceSession> {
+    const liveUrl = this.getLiveServerUrl();
+    if (liveUrl) {
+      try {
+        const res = await fetch(`${liveUrl}/status`, {
+          headers: this.getHeaders(),
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            return {
+              ...json.data,
+              isLiveServer: true,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("[BaileysService] Live Baileys microservice unreachable, falling back to local state:", e);
+      }
+    }
+    return { ...this.session, isLiveServer: false };
   }
 
   // Initialize or start QR connection
   public async initSession(): Promise<BaileysDeviceSession> {
+    const liveUrl = this.getLiveServerUrl();
+    if (liveUrl) {
+      try {
+        const res = await fetch(`${liveUrl}/connect`, {
+          method: "POST",
+          headers: this.getHeaders(),
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            return {
+              ...json.data,
+              isLiveServer: true,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("[BaileysService] Failed to init live Baileys session:", e);
+      }
+    }
+
+    // Fallback: Local demo simulation
     if (this.session.state === "CONNECTED") {
       return this.session;
     }
 
     this.session.state = "CONNECTING";
 
-    // Generate dynamic pairing QR string
+    // Generate pairing QR demo
     const rawQr = `2@${Date.now()}_${Math.random().toString(36).substring(2, 12)},InspectAI_WA,${Buffer.from("Enterprise Multi-Agent Quality Hub").toString("base64")}`;
     this.session.qrRaw = rawQr;
 
@@ -105,11 +166,11 @@ class BaileysManager {
       this.session.state = "DISCONNECTED";
     }
 
-    return this.session;
+    return { ...this.session, isLiveServer: false };
   }
 
   // Simulate or execute instant QR Scan Pairing
-  public simulatePairSuccess(phoneNumber = "+60 12-345 6789", pushName = "InspectAI Operations Master"): BaileysDeviceSession {
+  public simulatePairSuccess(phoneNumber = "+62 812-3456-7890", pushName = "InspectAI Operations Master"): BaileysDeviceSession {
     this.session.state = "CONNECTED";
     this.session.phoneNumber = phoneNumber;
     this.session.pushName = pushName;
@@ -129,11 +190,31 @@ class BaileysManager {
       status: "READ",
     });
 
-    return this.session;
+    return { ...this.session, isLiveServer: false };
   }
 
   // Send WhatsApp Text Message
   public async sendTextMessage(to: string, text: string, senderName = "InspectAI Dispatch Bot"): Promise<WhatsAppMessageLog> {
+    const liveUrl = this.getLiveServerUrl();
+    if (liveUrl) {
+      try {
+        const res = await fetch(`${liveUrl}/send`, {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify({ to, text, senderName }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            return json.data;
+          }
+        }
+      } catch (e) {
+        console.warn("[BaileysService] Live send failed, falling back to local log:", e);
+      }
+    }
+
+    // Local / fallback mode
     const formattedTo = to.startsWith("+") ? to : `+${to}`;
     const log: WhatsAppMessageLog = {
       id: `out-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -173,7 +254,7 @@ class BaileysManager {
 
     this.addLog(inboundLog);
 
-    // AI Multi-Agent automated reply logic in English
+    // AI Multi-Agent automated reply logic
     let replyText = "";
     if (text.toUpperCase().includes("FINISH") || text.toUpperCase().includes("DONE") || text.toUpperCase().includes("SELESAI")) {
       replyText = `✅ [Agent 6: Report Generator] "FINISHED UPLOAD" signal confirmed from ${senderName}. 4 field photos indexed into WhatsApp folder. ISO/AQL 2.5 draft report is now compiling.`;
@@ -200,7 +281,28 @@ class BaileysManager {
   }
 
   // Disconnect session
-  public disconnect(): BaileysDeviceSession {
+  public async disconnect(): Promise<BaileysDeviceSession> {
+    const liveUrl = this.getLiveServerUrl();
+    if (liveUrl) {
+      try {
+        const res = await fetch(`${liveUrl}/disconnect`, {
+          method: "POST",
+          headers: this.getHeaders(),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            return {
+              ...json.data,
+              isLiveServer: true,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("[BaileysService] Live disconnect failed:", e);
+      }
+    }
+
     this.session.state = "DISCONNECTED";
     this.session.phoneNumber = null;
     this.session.pushName = null;
@@ -219,7 +321,7 @@ class BaileysManager {
       status: "SENT",
     });
 
-    return this.session;
+    return { ...this.session, isLiveServer: false };
   }
 
   private addLog(log: WhatsAppMessageLog) {
